@@ -1,33 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>时间银行平台</title>
+    <meta charset="UTF-8">
     <meta http-equiv="refresh" content="0; url=enhanced_login.html">
+    <title>时间银行平台</title>
+    <script>
+        // 使用多种方法确保重定向生效
+        window.location.href = "enhanced_login.html";
+        
+        // 如果上面的方法失败， 尝试使用相对路径
+        setTimeout(function() {
+            window.location.href = "./enhanced_login.html";
+        }, 1000);
+        
+        // 如果还是失败，尝试使用绝对路径
+        setTimeout(function() {
+            var baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+            window.location.href = baseUrl + "/enhanced_login.html";
+        }, 2000);
+    </script>
 </head>
 <body>
-    <p>如果您没有被自动重定向， 请<a href="enhanced_login.html">点击这里</a>进入登录页面。</p>
+    <h1>正在重定向到登录页面...</h1>
+    <p>如果您没有被自动重定向，请<a href="enhanced_login.html">点击这里</a>进入登录页面。</p>
 </body>
 </html>
-<script>
-// 检测404错误并重定向
-window.addEventListener('error', function(e) {
-  if (e.target.tagName.toLowerCase() === 'link' || e.target.tagName.toLowerCase() === 'script') {
-    return; // 忽略资源加载错误
-  }
-  
-  // 如果当前URL包含register.html，重定向到enhanced_register.html
-  if (window.location.href.indexOf('register.html') > -1) {
-    window.location.href = window.location.href.replace('register.html', 'enhanced_register.html');
-  }
-}, true);
-
-// 修复所有指向register.html的链接
-document.addEventListener('DOMContentLoaded', function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (links[i].href.indexOf('register.html') > -1) {
-      links[i].href = links[i].href.replace('register.html', 'enhanced_register.html');
-    }
-  }
-});
-</script>
