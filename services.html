@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=fixed_services.html">
+    <title>重定向到服务市场</title>
+    <script>
+        // 使用多种方法确保重定向生效
+        window.location.href = "fixed_services.html";
+        
+        // 如果上面的方法失败，尝试使用相对路径
+        setTimeout(function() {
+            window.location.href = "./fixed_services.html";
+        }, 1000);
+        
+        // 如果还是失败，尝试使用绝对路径
+        setTimeout(function() {
+            var baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+            window.location.href = baseUrl + "/fixed_services.html";
+        }, 2000);
+    </script>
+</head>
+<body>
+    <h1>正在重定向到服务市场...</h1>
+    <p>如果您没有被自动重定向，请<a href="fixed_services.html">点击这里</a>。</p>
+</body>
+</html>
