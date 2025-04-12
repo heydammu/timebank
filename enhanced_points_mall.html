@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>积分商城 - 时间银行</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.css" rel="stylesheet">
+    <script>
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否已登录
+            const userDataStr = localStorage.getItem('timebank_user');
+            if (!userDataStr) {
+                // 未登录，重定向到登录页面
+                alert('请先登录');
+                window.location.href = 'enhanced_login.html';
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (!userData.loggedIn) {
+                    // 未登录，重定向到登录页面
+                    alert('请先登录');
+                    window.location.href = 'enhanced_login.html';
+                    return;
+                }
+                
+                // 更新用户名显示
+                const usernameElements = document.querySelectorAll('.username-display');
+                usernameElements.forEach(el => {
+                    el.textContent = userData.username || '用户';
+                });
+                
+                // 如果是管理员，显示管理员入口
+                if (userData.role === 'admin') {
+                    const adminEntryElement = document.getElementById('adminEntry');
+                    if (adminEntryElement) {
+                        adminEntryElement.classList.remove('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('登录状态解析错误', e);
+                localStorage.removeItem('timebank_user');
+                alert('登录状态异常，请重新登录');
+                window.location.href = 'enhanced_login.html';
+            }
+            
+            // 初始化积分商城
+            initPointsMall();
+        });
+        
+        // 初始化积分商城
+        function initPointsMall() {
+            // 加载商品数据
+            loadProducts();
+            
+            // 加载用户积分
+            loadUserPoints();
+            
+            // 绑定分类按钮事件
+            document.querySelectorAll('[data-category]').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的选中状态
+                    document.querySelectorAll('[data-category]').forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+                    });
+                    
+                    // 设置当前按钮为选中状态
+                    this.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+                    this.classList.add('bg-blue-600', 'text-white');
+                    
+                    // 筛选商品
+                    filterProducts(this.getAttribute('data-category'));
+                });
+            });
+            
+            // 绑定商品详情模态框关闭按钮事件
+            document.getElementById('closeProductDetailButton').addEventListener('click', function() {
+                document.getElementById('productDetailModal').classList.add('hidden');
+            });
+            
+            // 绑定兑换确认模态框关闭按钮事件
+            document.getElementById('closeExchangeConfirmButton').addEventListener('click', function() {
+                document.getElementById('exchangeConfirmModal').classList.add('hidden');
+            });
+            
+            // 绑定兑换成功模态框关闭按钮事件
+            document.getElementById('closeExchangeSuccessButton').addEventListener('click', function() {
+                document.getElementById('exchangeSuccessModal').classList.add('hidden');
+            });
+            
+            // 绑定我的订单按钮事件
+            document.getElementById('myOrdersButton').addEventListener('click', function() {
+                document.getElementById('myOrdersModal').classList.remove('hidden');
+                loadUserOrders();
+            });
+            
+            // 绑定我的订单模态框关闭按钮事件
+            document.getElementById('closeMyOrdersButton').addEventListener('click', function() {
+                document.getElementById('myOrdersModal').classList.add('hidden');
+            });
+            
+            // 绑定兑换确认按钮事件
+            document.getElementById('confirmExchangeButton').addEventListener('click', function() {
+                submitExchange();
+            });
+            
+            // 绑定兑换按钮事件
+            document.getElementById('exchangeProductButton').addEventListener('click', function() {
+                const productId = parseInt(this.getAttribute('data-product-id'));
+                showExchangeConfirm(productId);
+            });
+            
+            // 绑定管理员入口按钮事件
+            const adminEntryButton = document.getElementById('adminEntryButton');
+            if (adminEntryButton) {
+                adminEntryButton.addEventListener('click', function() {
+                    window.location.href = 'admin_dashboard_enhanced.html';
+                });
+            }
+            
+            // 绑定退出登录按钮事件
+            document.querySelectorAll('.logout-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    localStorage.removeItem('timebank_user');
+                    window.location.href = 'enhanced_login.html';
+                });
+            });
+            
+            // 绑定用户菜单按钮事件
+            document.getElementById('userMenuButton').addEventListener('click', function() {
+                const menu = document.getElementById('userMenu');
+                menu.classList.toggle('hidden');
+            });
+            
+            // 绑定移动端菜单按钮事件
+            document.getElementById('mobileMenuButton').addEventListener('click', function() {
+                const menu = document.getElementById('mobileMenu');
+                menu.classList.toggle('hidden');
+            });
+        }
+        
+        // 加载商品数据
+        function loadProducts() {
+            // 从localStorage获取商品数据
+            let products = JSON.parse(localStorage.getItem('timebank_products') || '[]');
+            
+            // 如果没有数据，使用默认数据
+            if (products.length === 0) {
+                products = [
+                    {
+                        id: 1,
+                        name: "老年人保健枕",
+                        category: "daily",
+                        categoryName: "日常用品",
+                        points: 50,
+                        originalPoints: 80,
+                        stock: 15,
+                        sold: 28,
+                        image: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "专为老年人设计的保健枕，有助于改善睡眠质量，缓解颈椎不适。"
+                    },
+                    {
+                        id: 2,
+                        name: "血压计",
+                        category: "health",
+                        categoryName: "健康医疗",
+                        points: 120,
+                        originalPoints: 150,
+                        stock: 8,
+                        sold: 42,
+                        image: "https://images.unsplash.com/photo-1581595219315-a187dd40c322?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "高精度电子血压计，操作简单，适合老年人在家自测血压。"
+                    },
+                    {
+                        id: 3,
+                        name: "按摩足浴盆",
+                        category: "health",
+                        categoryName: "健康医疗",
+                        points: 200,
+                        originalPoints: 250,
+                        stock: 5,
+                        sold: 15,
+                        image: "https://images.unsplash.com/photo-1532413992378-f169ac26fff0?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "多功能足浴盆，带按摩和加热功能，有助于改善血液循环，缓解足部疲劳。"
+                    },
+                    {
+                        id: 4,
+                        name: "老年人智能手表",
+                        category: "daily",
+                        categoryName: "日常用品",
+                        points: 300,
+                        originalPoints: 350,
+                        stock: 3,
+                        sold: 10,
+                        image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "专为老年人设计的智能手表，具有心率监测、紧急呼叫和跌倒检测等功能。"
+                    },
+                    {
+                        id: 5,
+                        name: "营养保健品礼盒",
+                        category: "health",
+                        categoryName: "健康医疗",
+                        points: 150,
+                        originalPoints: 180,
+                        stock: 12,
+                        sold: 35,
+                        image: "https://images.unsplash.com/photo-1556707752-481d500a2c58?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "老年人营养保健品礼盒，含钙片、维生素和蛋白质粉等多种营养补充剂。"
+                    },
+                    {
+                        id: 6,
+                        name: "助行器",
+                        category: "daily",
+                        categoryName: "日常用品",
+                        points: 180,
+                        originalPoints: 220,
+                        stock: 7,
+                        sold: 20,
+                        image: "https://images.unsplash.com/photo-1588345921523-c2dcdb7f1dcd?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "轻便折叠式助行器，带座椅和储物篮，方便老年人外出活动。"
+                    },
+                    {
+                        id: 7,
+                        name: "老年人专用手机",
+                        category: "daily",
+                        categoryName: "日常用品",
+                        points: 250,
+                        originalPoints: 300,
+                        stock: 6,
+                        sold: 18,
+                        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "大按键、大字体的老年人专用手机，操作简单，带紧急呼叫功能。"
+                    },
+                    {
+                        id: 8,
+                        name: "老年人阅读灯",
+                        category: "daily",
+                        categoryName: "日常用品",
+                        points: 80,
+                        originalPoints: 100,
+                        stock: 20,
+                        sold: 30,
+                        image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "护眼阅读灯，亮度可调，减少眼睛疲劳，适合老年人阅读使用。"
+                    },
+                    {
+                        id: 9,
+                        name: "家庭清洁服务",
+                        category: "service",
+                        categoryName: "专业服务",
+                        points: 100,
+                        originalPoints: 120,
+                        stock: 50,
+                        sold: 25,
+                        image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "专业家庭清洁服务，包括房间清洁、厨房清洁和卫生间清洁等。"
+                    },
+                    {
+                        id: 10,
+                        name: "电影票兑换券",
+                        category: "entertainment",
+                        categoryName: "文娱活动",
+                        points: 60,
+                        originalPoints: 80,
+                        stock: 30,
+                        sold: 45,
+                        image: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "可兑换一张电影票，适用于全国指定影院，有效期3个月。"
+                    },
+                    {
+                        id: 11,
+                        name: "健康体检套餐",
+                        category: "health",
+                        categoryName: "健康医疗",
+                        points: 350,
+                        originalPoints: 400,
+                        stock: 10,
+                        sold: 15,
+                        image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "老年人专属健康体检套餐，包括血常规、尿常规、心电图、B超等多项检查。"
+                    },
+                    {
+                        id: 12,
+                        name: "旅游景点门票",
+                        category: "entertainment",
+                        categoryName: "文娱活动",
+                        points: 120,
+                        originalPoints: 150,
+                        stock: 20,
+                        sold: 30,
+                        image: "https://images.unsplash.com/photo-1530789253388-582c481c54b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "可兑换指定旅游景点门票一张，适合老年人休闲娱乐。"
+                    }
+                ];
+                
+                // 保存到localStorage
+                localStorage.setItem('timebank_products', JSON.stringify(products));
+            }
+            
+            // 渲染商品列表
+            renderProducts(products);
+        }
+        
+        // 渲染商品列表
+        function renderProducts(products) {
+            const productsContainer = document.getElementById('productsList');
+            productsContainer.innerHTML = '';
+            
+            if (products.length === 0) {
+                productsContainer.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">没有找到符合条件的商品</div>';
+                return;
+            }
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-white rounded-lg shadow overflow-hidden';
+                productCard.innerHTML = `
+                    <div class="product-card cursor-pointer" data-id="${product.id}">
+                        <img class="h-48 w-full object-cover" src="${product.image}" alt="${product.name}">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-medium text-gray-900">${product.name}</h3>
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    ${product.categoryName}
+                                </span>
+                            </div>
+                            <div class="mt-2 flex items-center">
+                                <span class="text-xl font-bold text-blue-600">${product.points}</span>
+                                <span class="ml-1 text-sm text-gray-500">积分</span>
+                                ${product.originalPoints > product.points ? `<span class="ml-2 text-sm line-through text-gray-400">${product.originalPoints}积分</span>` : ''}
+                            </div>
+                            <div class="mt-2 flex justify-between text-sm text-gray-500">
+                                <span>库存: ${product.stock}</span>
+                                <span>已兑换: ${product.sold}</span>
+                            </div>
+                            <div class="mt-3">
+                                <button type="button" class="w-full inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 exchange-btn" data-id="${product.id}" ${product.stock <= 0 ? 'disabled' : ''}>
+                                    ${product.stock > 0 ? '立即兑换' : '已售罄'}
+                                </button>
+                            </div>
+                        </div>
+          
+(Content truncated due to size limit. Use line ranges to read in chunks)

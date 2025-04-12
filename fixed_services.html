@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务市场 - 时间银行</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否已登录
+            const userDataStr = localStorage.getItem('timebank_user');
+            if (!userDataStr) {
+                // 未登录，重定向到登录页面
+                alert('请先登录');
+                window.location.href = 'enhanced_login.html';
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (!userData.loggedIn) {
+                    // 未登录，重定向到登录页面
+                    alert('请先登录');
+                    window.location.href = 'enhanced_login.html';
+                    return;
+                }
+                
+                // 检查是否是管理员，如果是管理员，提示应该使用管理员界面
+                if (userData.role === 'admin') {
+                    const useAdminInterface = confirm('您当前以管理员身份登录，是否前往管理员控制面板？');
+                    if (useAdminInterface) {
+                        window.location.href = 'admin_dashboard.html';
+                        return;
+                    }
+                }
+                
+                // 更新用户信息显示
+                const usernameElement = document.getElementById('username-display');
+                if (usernameElement) {
+                    usernameElement.textContent = userData.username || '用户';
+                }
+            } catch (e) {
+                console.error('登录状态解析错误', e);
+                localStorage.removeItem('timebank_user');
+                alert('登录状态异常，请重新登录');
+                window.location.href = 'enhanced_login.html';
+            }
+        });
+    </script>
+    <script>
+        // 服务数据
+        const services = [
+            {
+                id: 1,
+                title: "老年人日常陪护",
+                category: "生活照料",
+                provider: "张阿姨",
+                location: "东城区",
+                date: "2025-04-15",
+                time: "09:00-11:00",
+                points: 20,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "提供老年人日常生活照料，包括聊天、读报、散步等陪伴服务，有5年养老院工作经验。",
+                contact: "13812345678",
+                address: "东城区建国门街道XX社区",
+                applications: []
+            },
+            {
+                id: 2,
+                title: "老年人专业护理",
+                category: "医疗陪护",
+                provider: "李护士",
+                location: "西城区",
+                date: "2025-04-16",
+                time: "14:00-16:00",
+                points: 30,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "专业护士提供血压测量、血糖监测、注射胰岛素等医疗护理服务，持有护士执业证书。",
+                contact: "13987654321",
+                address: "西城区德胜街道XX社区",
+                applications: []
+            },
+            {
+                id: 3,
+                title: "老年人心理疏导",
+                category: "精神慰藉",
+                provider: "王心理师",
+                location: "朝阳区",
+                date: "2025-04-18",
+                time: "10:00-12:00",
+                points: 25,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1573497620053-ea5300f94f21?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "专业心理咨询师提供老年人心理疏导服务，帮助缓解孤独感和焦虑情绪，持有心理咨询师证书。",
+                contact: "13765432109",
+                address: "朝阳区建外街道XX社区",
+                applications: []
+            },
+            {
+                id: 4,
+                title: "老年人智能手机使用指导",
+                category: "专业技能",
+                provider: "刘老师",
+                location: "海淀区",
+                date: "2025-04-20",
+                time: "15:00-17:00",
+                points: 15,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1622675363311-3e1904dc1885?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "教授老年人使用智能手机的基本操作，包括微信、支付宝、打车软件等常用APP的使用方法。",
+                contact: "13698765432",
+                address: "海淀区中关村街道XX社区",
+                applications: []
+            },
+            {
+                id: 5,
+                title: "老年人居家清洁",
+                category: "生活照料",
+                provider: "赵阿姨",
+                location: "丰台区",
+                date: "2025-04-22",
+                time: "09:30-11:30",
+                points: 25,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "提供老年人居家环境清洁服务，包括打扫卫生、整理物品、清洗衣物等，有多年家政服务经验。",
+                contact: "13587654321",
+                address: "丰台区丰台街道XX社区",
+                applications: []
+            },
+            {
+                id: 6,
+                title: "老年人营养餐制作",
+                category: "生活照料",
+                provider: "孙厨师",
+                location: "石景山区",
+                date: "2025-04-25",
+                time: "11:00-13:00",
+                points: 35,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1547592180-85f173990554?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "专业厨师提供老年人营养餐制作服务，根据老年人的身体状况和口味偏好，制作营养均衡的可口饭菜。",
+                contact: "13476543210",
+                address: "石景山区八角街道XX社区",
+                applications: []
+            },
+            {
+                id: 7,
+                title: "老年人康复训练",
+                category: "医疗陪护",
+                provider: "钱康复师",
+                location: "通州区",
+                date: "2025-04-28",
+                time: "14:30-16:30",
+                points: 40,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "专业康复治疗师提供老年人康复训练服务，包括肢体功能训练、平衡能力训练等，持有康复治疗师证书。",
+                contact: "13365432109",
+                address: "通州区梨园街道XX社区",
+                applications: []
+            },
+            {
+                id: 8,
+                title: "老年人书法教学",
+                category: "专业技能",
+                provider: "周老师",
+                location: "大兴区",
+                date: "2025-04-30",
+                time: "10:00-12:00",
+                points: 20,
+                status: "可申请",
+                image: "https://images.unsplash.com/photo-1577472173963-6c3eb92e57f0?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                description: "专业书法老师提供老年人书法教学服务，从基本笔画到完整作品的指导，适合各水平的老年人学习。",
+                contact: "13254321098",
+                address: "大兴区黄村街道XX社区",
+                applications: []
+            }
+        ];
+
+        // 用户数据（模拟）
+        const userData = {
+            id: 1,
+            name: "张三",
+            role: "user", // user或admin
+            points: 100,
+            appliedServices: [],
+            providedServices: []
+        };
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化服务列表
+            renderServices(services);
+            
+            // 更新用户信息显示
+            updateUserInfo();
+            
+            // 绑定分类筛选事件
+            document.getElementById('category-tabs').addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    // 移除所有标签的选中状态
+                    document.querySelectorAll('#category-tabs a').forEach(tab => {
+                        tab.classList.remove('border-blue-500', 'text-blue-600');
+                        tab.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    // 设置当前标签为选中状态
+                    e.target.classList.remove('border-transparent', 'text-gray-500');
+                    e.target.classList.add('border-blue-500', 'text-blue-600');
+                    // 筛选服务
+                    filterServices();
+                }
+            });
+
+            // 绑定区域筛选事件
+            document.getElementById('location-tabs').addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    // 移除所有标签的选中状态
+                    document.querySelectorAll('#location-tabs a').forEach(tab => {
+                        tab.classList.remove('border-blue-500', 'text-blue-600');
+                        tab.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    // 设置当前标签为选中状态
+                    e.target.classList.remove('border-transparent', 'text-gray-500');
+                    e.target.classList.add('border-blue-500', 'text-blue-600');
+                    // 筛选服务
+                    filterServices();
+                }
+            });
+
+            // 绑定时间筛选事件
+            document.getElementById('time-tabs').addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    // 移除所有标签的选中状态
+                    document.querySelectorAll('#time-tabs a').forEach(tab => {
+                        tab.classList.remove('border-blue-500', 'text-blue-600');
+                        tab.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    // 设置当前标签为选中状态
+                    e.target.classList.remove('border-transparent', 'text-gray-500');
+                    e.target.classList.add('border-blue-500', 'text-blue-600');
+                    // 筛选服务
+                    filterServices();
+                }
+            });
+
+            // 绑定关闭模态框事件
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('service-detail-modal').classList.add('hidden');
+                    document.getElementById('service-apply-modal').classList.add('hidden');
+                    document.getElementById('apply-success-modal').classList.add('hidden');
+                    document.getElementById('my-services-modal').classList.add('hidden');
+                    document.getElementById('publish-service-modal').classList.add('hidden');
+                    document.getElementById('admin-panel-modal').classList.add('hidden');
+                });
+            });
+
+            // 绑定服务申请表单提交事件 - 修复版本
+            document.getElementById('submit-application-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                submitServiceApplication();
+            });
+
+            // 绑定我的服务按钮事件
+            document.getElementById('my-services-btn').addEventListener('click', function() {
+                document.getElementById('my-services-modal').classList.remove('hidden');
+                renderMyServices();
+            });
+
+            // 绑定发布服务按钮事件
+            document.getElementById('publish-service-btn').addEventListener('click', function() {
+                document.getElementById('publish-service-modal').classList.remove('hidden');
+            });
+
+            // 绑定发布服务表单提交事件
+            document.getElementById('publish-service-btn-submit').addEventListener('click', function(e) {
+                e.preventDefault();
+                submitPublishServiceForm();
+            });
+
+            // 绑定管理员面板按钮事件
+            document.getElementById('admin-panel-btn').addEventListener('click', function() {
+                document.getElementById('admin-panel-modal').classList.remove('hidden');
+                renderServiceApplications();
+            });
+
+            // 检查用户角色，显示/隐藏管理员按钮
+            if (userData.role === 'admin') {
+                document.getElementById('admin-panel-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-panel-btn').classList.add('hidden');
+            }
+
+            // 添加角色切换功能（仅用于演示）
+            document.getElementById('switch-role-btn').addEventListener('click', function() {
+                if (userData.role === 'user') {
+                    userData.role = 'admin';
+                    this.textContent = '切换为普通用户';
+                    document.getElementById('admin-panel-btn').classList.remove('hidden');
+                } else {
+                    userData.role = 'user';
+                    this.textContent = '切换为管理员';
+                    document.getElementById('admin-panel-btn').classList.add('hidden');
+                }
+            });
+        });
+
+        // 提交服务申请表单 - 新增函数
+        function submitServiceApplication() {
+            // 获取表单数据
+            const serviceId = parseInt(document.getElementById('apply-service-id').value);
+            const name = document.getElementById('apply-name').value;
+            const contact = document.getElementById('apply-contact').value;
+            const message = document.getElementById('apply-message').value;
+            
+            // 验证表单
+            if (!name || !contact) {
+                alert('请填写姓名和联系电话');
+                return;
+            }
+            
+            // 查找服务
+            const service = services.find(s => s.id === serviceId);
+            if (!service) {
+                alert('服务不存在');
+                return;
+            }
+            
+            // 获取当前用户信息
+            const userDataStr = localStorage.getItem('timebank_user');
+            let userId = 0;
+            let username = name;
+            
+            if (userDataStr) {
+                try {
+                    const userData = JSON.parse(userDataStr);
+                    userId = userData.id || Date.now();
+                    username = userData.username || name;
+                } catch (e) {
+                    console.error('用户数据解析错误', e);
+                }
+            }
+            
+            // 添加申请记录
+            const application = {
+                id: Date.now(),
+                userId: userId,
+                userName: name,
+                contact: contact,
+                message: message,
+                status: "待审核",
+                date: new Date().toISOString()
+            };
+            
+            // 添加到服务的申请列表
+            service.applications = service.applications || [];
+            service.applications.push(application);
+            
+            // 保存服务数据到localStorage
+            localStorage.setItem('timebank_services', JSON.stringify(services));
+            
+            // 添加到用户已申请服务
+            const appliedService = {
+                id: application.id,
+                serviceId: service.id,
+                serviceTitle: service.title,
+                date: service.date,
+                time: service.time,
+                points: service.points,
+                status: "待审核"
+            };
+            
+            // 更新用户数据
+            updateUserAppliedServices(appliedService);
+            
+            // 隐藏申请模态框，显示成功模态框
+            document.getElementById('service-apply-modal').classList.add('hidden');
+            document.getElementById('apply-success-modal').classList.remove('hidden');
+            
+            // 重置表单
+            document.getElementById('apply-name').value = '';
+            document.getElementById('apply-contact').value = '';
+            document.getElementById('apply-message').value = '';
+            
+            console.log('申请提交成功', application);
+        }
+        
+        // 更新用户已申请服务
+        function updateUserAppliedServices(appliedService) {
+            // 获取当前用户
+            const userDataStr = localStorage.getItem('timebank_user');
+            if (!userDataStr) return;
+            
+            try {
+                const userData = JSON.parse(userDataStr);
+                
+              
+(Content truncated due to size limit. Use line ranges to read in chunks)

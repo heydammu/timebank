@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社区活动 - 时间银行</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.css" rel="stylesheet">
+    <script>
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否已登录
+            const userDataStr = localStorage.getItem('timebank_user');
+            if (!userDataStr) {
+                // 未登录，重定向到登录页面
+                alert('请先登录');
+                window.location.href = 'enhanced_login.html';
+                return;
+            }
+            
+            try {
+                const userData = JSON.parse(userDataStr);
+                if (!userData.loggedIn) {
+                    // 未登录，重定向到登录页面
+                    alert('请先登录');
+                    window.location.href = 'enhanced_login.html';
+                    return;
+                }
+                
+                // 更新用户名显示
+                const usernameElements = document.querySelectorAll('.username-display');
+                usernameElements.forEach(el => {
+                    el.textContent = userData.username || '用户';
+                });
+                
+                // 如果是管理员，显示管理员入口和创建活动按钮
+                if (userData.role === 'admin') {
+                    const adminEntryElement = document.getElementById('adminEntry');
+                    if (adminEntryElement) {
+                        adminEntryElement.classList.remove('hidden');
+                    }
+                    
+                    const createActivityButton = document.getElementById('create-activity-btn');
+                    if (createActivityButton) {
+                        createActivityButton.classList.remove('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('登录状态解析错误', e);
+                localStorage.removeItem('timebank_user');
+                alert('登录状态异常，请重新登录');
+                window.location.href = 'enhanced_login.html';
+            }
+            
+            // 初始化社区活动
+            initCommunityActivities();
+        });
+        
+        // 初始化社区活动
+        function initCommunityActivities() {
+            // 加载活动数据
+            loadActivities();
+            
+            // 加载用户积分
+            loadUserPoints();
+            
+            // 绑定分类按钮事件
+            document.querySelectorAll('[data-category]').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的选中状态
+                    document.querySelectorAll('[data-category]').forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+                    });
+                    
+                    // 设置当前按钮为选中状态
+                    this.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-100');
+                    this.classList.add('bg-blue-600', 'text-white');
+                    
+                    // 筛选活动
+                    filterActivities(this.getAttribute('data-category'));
+                });
+            });
+            
+            // 绑定活动详情模态框关闭按钮事件
+            document.getElementById('closeActivityDetailButton').addEventListener('click', function() {
+                document.getElementById('activityDetailModal').classList.add('hidden');
+            });
+            
+            // 绑定报名确认模态框关闭按钮事件
+            document.getElementById('closeRegisterConfirmButton').addEventListener('click', function() {
+                document.getElementById('registerConfirmModal').classList.add('hidden');
+            });
+            
+            // 绑定报名成功模态框关闭按钮事件
+            document.getElementById('closeRegisterSuccessButton').addEventListener('click', function() {
+                document.getElementById('registerSuccessModal').classList.add('hidden');
+            });
+            
+            // 绑定我的活动按钮事件
+            document.getElementById('myActivitiesButton').addEventListener('click', function() {
+                document.getElementById('myActivitiesModal').classList.remove('hidden');
+                loadUserActivities();
+            });
+            
+            // 绑定我的活动模态框关闭按钮事件
+            document.getElementById('closeMyActivitiesButton').addEventListener('click', function() {
+                document.getElementById('myActivitiesModal').classList.add('hidden');
+            });
+            
+            // 绑定创建活动按钮事件
+            const createActivityButton = document.getElementById('create-activity-btn');
+            if (createActivityButton) {
+                createActivityButton.addEventListener('click', function() {
+                    document.getElementById('createActivityModal').classList.remove('hidden');
+                });
+            }
+            
+            // 绑定创建活动模态框关闭按钮事件
+            document.getElementById('closeCreateActivityButton').addEventListener('click', function() {
+                document.getElementById('createActivityModal').classList.add('hidden');
+            });
+            
+            // 绑定报名确认按钮事件
+            document.getElementById('confirmRegisterButton').addEventListener('click', function() {
+                submitActivityRegistration();
+            });
+            
+            // 绑定报名按钮事件
+            document.getElementById('registerActivityButton').addEventListener('click', function() {
+                const activityId = parseInt(this.getAttribute('data-activity-id'));
+                showRegisterConfirm(activityId);
+            });
+            
+            // 绑定创建活动表单提交事件
+            document.getElementById('createActivityForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createNewActivity();
+            });
+            
+            // 绑定管理员入口按钮事件
+            const adminEntryButton = document.getElementById('adminEntryButton');
+            if (adminEntryButton) {
+                adminEntryButton.addEventListener('click', function() {
+                    window.location.href = 'admin_dashboard_enhanced.html';
+                });
+            }
+            
+            // 绑定退出登录按钮事件
+            document.querySelectorAll('.logout-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    localStorage.removeItem('timebank_user');
+                    window.location.href = 'enhanced_login.html';
+                });
+            });
+            
+            // 绑定用户菜单按钮事件
+            document.getElementById('userMenuButton').addEventListener('click', function() {
+                const menu = document.getElementById('userMenu');
+                menu.classList.toggle('hidden');
+            });
+            
+            // 绑定移动端菜单按钮事件
+            document.getElementById('mobileMenuButton').addEventListener('click', function() {
+                const menu = document.getElementById('mobileMenu');
+                menu.classList.toggle('hidden');
+            });
+        }
+        
+        // 加载活动数据
+        function loadActivities() {
+            // 从localStorage获取活动数据
+            let activities = JSON.parse(localStorage.getItem('timebank_activities') || '[]');
+            
+            // 如果没有数据，使用默认数据
+            if (activities.length === 0) {
+                activities = [
+                    {
+                        id: 1,
+                        title: "老年人健康讲座",
+                        category: "health",
+                        categoryName: "健康讲座",
+                        location: "东城区社区服务中心",
+                        date: "2025-04-15",
+                        time: "14:00-16:00",
+                        organizer: "社区卫生服务中心",
+                        reward: 10,
+                        participants: 18,
+                        maxParticipants: 30,
+                        image: "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "本次讲座将邀请资深医生为社区老年人讲解常见疾病预防和健康生活方式，参与者可获得10个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 2,
+                        title: "老年人智能手机使用培训",
+                        category: "skill",
+                        categoryName: "技能培训",
+                        location: "西城区老年活动中心",
+                        date: "2025-04-18",
+                        time: "09:30-11:30",
+                        organizer: "社区志愿者协会",
+                        reward: 15,
+                        participants: 12,
+                        maxParticipants: 20,
+                        image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "帮助老年人学习智能手机的基本操作，包括微信使用、视频通话、网上购物等，参与者可获得15个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 3,
+                        title: "社区老年人合唱团排练",
+                        category: "culture",
+                        categoryName: "文化娱乐",
+                        location: "朝阳区文化中心",
+                        date: "2025-04-20",
+                        time: "15:00-17:00",
+                        organizer: "社区文化站",
+                        reward: 20,
+                        participants: 25,
+                        maxParticipants: 40,
+                        image: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "社区老年人合唱团每周排练活动，为即将到来的社区文化节做准备，参与者可获得20个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 4,
+                        title: "老年人太极拳班",
+                        category: "fitness",
+                        categoryName: "健身活动",
+                        location: "海淀区体育公园",
+                        date: "2025-04-22",
+                        time: "07:00-08:30",
+                        organizer: "社区体育协会",
+                        reward: 15,
+                        participants: 20,
+                        maxParticipants: 30,
+                        image: "https://images.unsplash.com/photo-1552196563-55cd4e45efb3?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "专业太极拳老师教授24式太极拳，适合各年龄段老年人参与，参与者可获得15个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 5,
+                        title: "社区环境清洁志愿活动",
+                        category: "volunteer",
+                        categoryName: "志愿服务",
+                        location: "丰台区社区公园",
+                        date: "2025-04-25",
+                        time: "09:00-11:00",
+                        organizer: "社区居委会",
+                        reward: 25,
+                        participants: 15,
+                        maxParticipants: 50,
+                        image: "https://images.unsplash.com/photo-1558618666-c6879a4e1206?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "组织社区居民一起清理社区公园环境，美化社区环境，参与者可获得25个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 6,
+                        title: "老年人书法班",
+                        category: "culture",
+                        categoryName: "文化娱乐",
+                        location: "石景山区文化馆",
+                        date: "2025-04-28",
+                        time: "14:30-16:30",
+                        organizer: "社区文化站",
+                        reward: 20,
+                        participants: 10,
+                        maxParticipants: 15,
+                        image: "https://images.unsplash.com/photo-1577472173361-10665a672509?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "邀请书法家教授老年人书法技巧，提供书法纸墨等材料，参与者可获得20个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 7,
+                        title: "老年人营养膳食讲座",
+                        category: "health",
+                        categoryName: "健康讲座",
+                        location: "通州区社区服务中心",
+                        date: "2025-05-02",
+                        time: "10:00-12:00",
+                        organizer: "社区卫生服务中心",
+                        reward: 10,
+                        participants: 22,
+                        maxParticipants: 40,
+                        image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "营养师讲解老年人健康饮食和营养搭配知识，现场提供健康小食品尝，参与者可获得10个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    },
+                    {
+                        id: 8,
+                        title: "社区老年人棋牌比赛",
+                        category: "culture",
+                        categoryName: "文化娱乐",
+                        location: "大兴区老年活动中心",
+                        date: "2025-05-05",
+                        time: "13:30-17:00",
+                        organizer: "社区文化站",
+                        reward: 30,
+                        participants: 28,
+                        maxParticipants: 32,
+                        image: "https://images.unsplash.com/photo-1529978755210-7f13333beb13?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80",
+                        description: "组织社区老年人参加象棋、围棋、扑克等棋牌比赛，设置奖品，参与者可获得30个时间币奖励。",
+                        status: "进行中",
+                        applications: []
+                    }
+                ];
+                
+                // 保存到localStorage
+                localStorage.setItem('timebank_activities', JSON.stringify(activities));
+            }
+            
+            // 渲染活动列表
+            renderActivities(activities);
+        }
+        
+        // 渲染活动列表
+        function renderActivities(activities) {
+            const activitiesContainer = document.getElementById('activitiesList');
+            activitiesContainer.innerHTML = '';
+            
+            if (activities.length === 0) {
+                activitiesContainer.innerHTML = '<div class="col-span-3 text-center py-10 text-gray-500">没有找到符合条件的活动</div>';
+                return;
+            }
+            
+            // 获取当前用户
+            const userDataStr = localStorage.getItem('timebank_user');
+            let currentUser = null;
+            
+            if (userDataStr) {
+                try {
+                    const userData = JSON.parse(userDataStr);
+                    currentUser = userData;
+                } catch (e) {
+                    console.error('用户数据解析错误', e);
+                }
+            }
+            
+            activities.forEach(activity => {
+                const activityCard = document.createElement('div');
+                activityCard.className = 'bg-white rounded-lg shadow overflow-hidden';
+                
+                // 检查用户是否已报名
+                let isRegistered = false;
+                let applicationStatus = '';
+                
+                if (currentUser) {
+                    // 从用户记录中查找
+                    const users = JSON.parse(localStorage.getItem('timebank_users') || '[]');
+                    const user = users.find(u => u.username === currentUser.username);
+                    
+                    if (user && user.registeredActivities) {
+                        const registration = user.registeredActivities.find(r => r.activityId === activity.id);
+                        if (registration) {
+              
+(Content truncated due to size limit. Use line ranges to read in chunks)
