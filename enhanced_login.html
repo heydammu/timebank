@@ -258,3 +258,26 @@
     </script>
 </body>
 </html>
+<script>
+// 检测404错误并重定向
+window.addEventListener('error', function(e) {
+  if (e.target.tagName.toLowerCase() === 'link' || e.target.tagName.toLowerCase() === 'script') {
+    return; // 忽略资源加载错误
+  }
+  
+  // 如果当前URL包含register.html，重定向到enhanced_register.html
+  if (window.location.href.indexOf('register.html') > -1) {
+    window.location.href = window.location.href.replace('register.html', 'enhanced_register.html');
+  }
+}, true);
+
+// 修复所有指向register.html的链接
+document.addEventListener('DOMContentLoaded', function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].href.indexOf('register.html') > -1) {
+      links[i].href = links[i].href.replace('register.html', 'enhanced_register.html');
+    }
+  }
+});
+</script>
