@@ -3,282 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>注册 - 时间银行</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>时间银行 - 注册</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-    <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">注册新账户</h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-            已有账户?
-            <a href="enhanced_login.html" class="font-medium text-blue-600 hover:text-blue-500">
-                立即登录
-            </a>
-        </p>
-    </div>
-
-    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form id="registerForm" class="space-y-6">
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700">
-                        用户名
-                    </label>
-                    <div class="mt-1">
-                        <input
-                            id="username"
-                            name="username"
-                            type="text"
-                            required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700">
-                        密码
-                    </label>
-                    <div class="mt-1">
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <label for="confirm-password" class="block text-sm font-medium text-gray-700">
-                        确认密码
-                    </label>
-                    <div class="mt-1">
-                        <input
-                            id="confirm-password"
-                            name="confirm-password"
-                            type="password"
-                            required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <label for="phone" class="block text-sm font-medium text-gray-700">
-                        手机号码
-                    </label>
-                    <div class="mt-1">
-                        <input
-                            id="phone"
-                            name="phone"
-                            type="tel"
-                            required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700">
-                        电子邮箱
-                    </label>
-                    <div class="mt-1">
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <div class="relative">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-white text-gray-500">
-                                选择角色
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 grid grid-cols-2 gap-3">
-                        <div>
-                            <input type="radio" id="role-user" name="role" value="user" checked class="hidden peer">
-                            <label for="role-user" class="block w-full text-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium peer-checked:text-white peer-checked:bg-blue-600 peer-checked:border-blue-600 text-gray-700 bg-white border-gray-300 hover:bg-gray-50 cursor-pointer">
-                                普通用户
-                            </label>
-                        </div>
-                        <div>
-                            <input type="radio" id="role-admin" name="role" value="admin" class="hidden peer">
-                            <label for="role-admin" class="block w-full text-center py-2 px-4 border rounded-md shadow-sm text-sm font-medium peer-checked:text-white peer-checked:bg-blue-600 peer-checked:border-blue-600 text-gray-700 bg-white border-gray-300 hover:bg-gray-50 cursor-pointer">
-                                管理员
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="admin-code-container" class="hidden">
-                    <label for="admin-code" class="block text-sm font-medium text-gray-700">
-                        管理员注册码
-                    </label>
-                    <div class="mt-1">
-                        <input
-                            id="admin-code"
-                            name="admin-code"
-                            type="text"
-                            placeholder="请输入管理员注册码"
-                            class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                    </div>
-                    <p class="mt-1 text-xs text-gray-500">管理员注册需要输入有效的注册码</p>
-                </div>
-
-                <div class="flex items-center">
-                    <input
-                        id="agree-terms"
-                        name="agree-terms"
-                        type="checkbox"
-                        required
-                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label for="agree-terms" class="ml-2 block text-sm text-gray-900">
-                        我已阅读并同意 <a href="#" class="text-blue-600 hover:text-blue-500">服务条款</a> 和 <a href="#" class="text-blue-600 hover:text-blue-500">隐私政策</a>
-                    </label>
-                </div>
-
-                <div>
-                    <button
-                        type="submit"
-                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                        注册
-                    </button>
-                </div>
-            </form>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">时间银行</h1>
+            <p class="text-gray-600 mt-2">创建您的账户</p>
+        </div>
+        
+        <form id="registerForm" class="space-y-6">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">用户名</label>
+                <input type="text" id="username" name="username" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">密码</label>
+                <input type="password" id="password" name="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div>
+                <label for="confirmPassword" class="block text-sm font-medium text-gray-700">确认密码</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700">账户类型</label>
+                <select id="role" name="role" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                </select>
+            </div>
+            
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    注册
+                </button>
+            </div>
+        </form>
+        
+        <div class="text-center mt-6">
+            <p class="text-sm text-gray-600">
+                已有账户？ <a href="enhanced_login.html" class="font-medium text-blue-600 hover:text-blue-500">登录</a>
+            </p>
         </div>
     </div>
     
-    <div class="mt-8 text-center">
-        <a href="index.html" class="text-blue-600 hover:text-blue-500">返回首页</a>
-    </div>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const registerForm = document.getElementById('registerForm');
-            const roleAdmin = document.getElementById('role-admin');
-            const roleUser = document.getElementById('role-user');
-            const adminCodeContainer = document.getElementById('admin-code-container');
-            
-            // 检查是否已登录，如果已登录则根据角色跳转到相应页面
-            const checkLoginStatus = function() {
-                const userDataStr = localStorage.getItem('timebank_user');
-                if (userDataStr) {
-                    try {
-                        const userData = JSON.parse(userDataStr);
-                        if (userData.loggedIn) {
-                            if (userData.role === 'admin') {
-                                window.location.href = 'admin_dashboard.html';
-                            } else {
-                                window.location.href = 'services.html';
-                            }
-                        }
-                    } catch (e) {
-                        console.error('登录状态解析错误', e);
-                        localStorage.removeItem('timebank_user');
-                    }
+        // 检查登录状态
+        document.addEventListener('DOMContentLoaded', function()  {
+            const currentUser = JSON.parse(localStorage.getItem('timebank_current_user'));
+            if (currentUser) {
+                if (currentUser.role === 'admin') {
+                    window.location.href = 'admin_dashboard_enhanced.html';
+                } else {
+                    window.location.href = 'fixed_services.html';
                 }
+            }
+        });
+        
+        // 注册表单提交
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            
+            // 验证密码
+            if (password !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            // 获取现有用户
+            let users = JSON.parse(localStorage.getItem('timebank_users') || '[]');
+            
+            // 检查用户名是否已存在
+            if (users.some(user => user.username === username)) {
+                alert('用户名已存在，请选择其他用户名');
+                return;
+            }
+            
+            // 创建新用户
+            const newUser = {
+                id: Date.now(),
+                username: username,
+                password: password,
+                role: role,
+                points: 100, // 初始积分
+                loggedIn: false,
+                registeredActivities: [],
+                serviceRequests: [],
+                orders: []
             };
             
-            // 页面加载时检查登录状态
-            checkLoginStatus();
+            // 添加到用户列表
+            users.push(newUser);
+            localStorage.setItem('timebank_users', JSON.stringify(users));
             
-            // 显示/隐藏管理员注册码输入框
-            roleAdmin.addEventListener('change', function() {
-                adminCodeContainer.classList.remove('hidden');
-            });
-            
-            roleUser.addEventListener('change', function() {
-                adminCodeContainer.classList.add('hidden');
-            });
-            
-            registerForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirm-password').value;
-                const phone = document.getElementById('phone').value;
-                const email = document.getElementById('email').value;
-                const role = document.querySelector('input[name="role"]:checked').value;
-                const agreeTerms = document.getElementById('agree-terms').checked;
-                
-                // 表单验证
-                if (!username || !password || !confirmPassword || !phone || !email) {
-                    alert('请填写所有必填字段');
-                    return;
-                }
-                
-                if (password !== confirmPassword) {
-                    alert('两次输入的密码不一致');
-                    return;
-                }
-                
-                if (!agreeTerms) {
-                    alert('请阅读并同意服务条款和隐私政策');
-                    return;
-                }
-                
-                // 检查用户名是否已存在
-                const users = JSON.parse(localStorage.getItem('timebank_users') || '[]');
-                const existingUser = users.find(user => user.username === username);
-                if (existingUser) {
-                    alert('用户名已存在，请使用其他用户名');
-                    return;
-                }
-                
-                // 管理员注册验证
-                if (role === 'admin') {
-                    const adminCode = document.getElementById('admin-code').value;
-                    if (!adminCode) {
-                        alert('请输入管理员注册码');
-                        return;
-                    }
-                    
-                    // 验证管理员注册码
-                    if (adminCode !== 'admin2025') {
-                        alert('管理员注册码无效');
-                        return;
-                    }
-                }
-                
-                // 创建新用户
-                const newUser = {
-                    username: username,
-                    password: password, // 实际应用中应该加密存储
-                    phone: phone,
-                    email: email,
-                    role: role,
-                    points: 100, // 新用户初始积分
-                    registerTime: new Date().toISOString(),
-                    lastLoginTime: null
-                };
-                
-                // 保存用户信息
-                users.push(newUser);
-                localStorage.setItem('timebank_users', JSON.stringify(users));
-                
-                // 注册成功提示
-                alert('注册成功！请使用您的账号登录');
-                
-                // 跳转到登录页面
-                window.location.href = 'enhanced_login.html';
-            });
+            alert('注册成功！请登录');
+            window.location.href = 'enhanced_login.html';
         });
     </script>
 </body>
